@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+  <form method="get">
+    <div class="header">
+      <h3>{% now "F d, Y" %}</h3>
+    </div>
+  </form>
+  <h1>Cashier Dashboard</h1>
+
+   <main class="main-content-dash">
+  <div class="header-dash">Halo, {{ user.username }}!</div>
+
+  <div class="widgets">
+    <div class="widget">
+      <i class="fas fa-utensils"></i>
+      <div class="info">Total Menu: {{ total_menu }}</div>
+    </div>
+    <div class="widget">
+      <i class="fas fa-receipt"></i>
+      <div class="info">Pesanan Hari Ini: {{ jumlah_pesanan_hari_ini }}</div>
+    </div>
+    <div class="widget">
+      <i class="fas fa-money-bill-wave"></i>
+      <div class="info">Pendapatan Hari Ini: Rp {{ pendapatan_hari_ini|floatformat:2 }}</div>
+    </div>
+  </div>
+
+  <div class="widget-soldout">
+    <h3>Daftar Menu Sold Out</h3>
+    {% if menu_sold_out %}
+      <ul>
+        {% for menu in menu_sold_out %}
+          <li>{{ menu.nama_item }} - {{ menu.kategori }}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>Semua menu tersedia hari ini 😃</p>
+    {% endif %}
+  </div>
+</main>
+
+
+{% endblock %}

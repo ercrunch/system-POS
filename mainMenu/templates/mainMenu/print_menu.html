@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Print Menu Items</title>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/print.css' %}">
+    <script>
+        function doPrint() {
+            window.print();
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+    </script>
+</head>
+<body>
+    <h2>Daftar Menu</h2>
+
+    <button class="btn" onclick="doPrint()">Print</button>
+    <button class="btn" onclick="goBack()">Back</button>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Nama Item</th>
+                <th>Kategori</th>
+                <th>Harga</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{ item.nama_item }}</td>
+                <td>{{ item.kategori }}</td>
+                <td>{{ item.harga }}</td>
+                <td>{{ item.status }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

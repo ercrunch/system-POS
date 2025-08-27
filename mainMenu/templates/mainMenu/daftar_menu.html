@@ -1,0 +1,9 @@
+<h2>Daftar Menu</h2>
+<ul>
+  {% for menu in menus %}
+    <li>
+      {{ menu.nama_item }} - Rp {{ menu.harga }} - {{ menu.kategori }} {% if menu.status %}✔{% else %}❌{% endif %}
+    </li>
+  {% endfor %}
+</ul>
+<a href="{% url 'tambah_menu' %}">Tambah Menu</a>

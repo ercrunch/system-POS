@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}Menu{% endblock %}
+
+{% block content %}
+   <form method="get">
+    <div class="header">
+      <h3>{% now "F d, Y" %}</h3>
+      <input type="text" name="search" placeholder="Search Here" value="{{ request.GET.search }}">
+    </div>
+  </form>
+  <h1>Cထffee Cafe Menu</h1>
+
+  <!-- Kategori Filter -->
+  <div class="category-filter">
+    <a href="?kategori=All"><button {% if kategori == None or kategori == 'All' %}class="active"{% endif %}>All</button></a>
+    <a href="?kategori=snack"><button {% if kategori == 'snack' %}class="active"{% endif %}>Snack</button></a>
+    <a href="?kategori=cake"><button {% if kategori == 'cake' %}class="active"{% endif %}>Cake</button></a>
+    <a href="?kategori=pastry"><button {% if kategori == 'pastry' %}class="active"{% endif %}>Pastry</button></a>
+    <a href="?kategori=coffee"><button {% if kategori == 'coffee' %}class="active"{% endif %}>Coffee</button></a>
+    <a href="?kategori=non_coffee"><button {% if kategori == 'non_coffee' %}class="active"{% endif %}>Non Coffee</button></a>
+  </div>
+
+  <div class="product-grid">
+    {% for menu in menus %}
+      <div class="product-card">
+        <img src="{{ menu.gambar.url }}" alt="{{ menu.nama_item }}">
+        <h3>{{ menu.nama_item }}</h3>
+        <p>Rp{{ menu.harga }}</p>
+        <!-- <button>Add</button> -->
+      </div>
+    {% empty %}
+      <p>Tidak ada menu tersedia.</p>
+    {% endfor %}
+  </div>
+{% endblock %}

@@ -1,0 +1,85 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}Cafe System{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+  <div class="container-dashboard">
+    <!-- Sidebar -->
+    <aside class="kasir-sidebar">
+      <button id="toggleSidebar" class="toggle-sidebar-btn">
+        <i class="fas fa-angle-left"></i>
+      </button>
+      <div class="kasir-brand">
+        <h2>Cထffee Cafe</h2>
+        <p>Cashier - {{ user.username }}</p>
+      </div>
+      <nav class="kasir-nav">
+        <ul class="sidebar-menu">
+          <li><a href="{% url 'kasir_dashboard' %}"><i class="fas fa-home"></i><span>Dashboard</span></a></li>
+          <li><a href="{% url 'kasir_summary' %}"><i class="fa-solid fa-clipboard-list"></i><span>Summary</span></a></li>
+          <li><a href="{% url 'kasir_order' %}"><i class="fas fa-cash-register"></i><span>Take-Order</span></a></li>
+          <li>
+            <form method="POST" action="{% url 'logout' %}" id="logoutForm">
+              {% csrf_token %}
+              <button type="submit" onclick="return confirmLogout(event)">
+                <i class="fas fa-sign-out-alt"></i><span>Logout</span>
+              </button>
+            </form>
+          </li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- <form method="get">
+            <div class="header">
+            <h3>{% now "F d, Y" %}</h3>
+            <input type="text" name="search" placeholder="Search Here" value="{{ request.GET.search }}">
+            </div>
+        </form> -->
+      {% block content %}
+      {% endblock %}
+    </main>
+  </div>
+</body>
+</html>
+
+    <script>
+      function confirmLogout(event) {
+        const confirmed = confirm("Apakah kamu yakin ingin logout?");
+        if (!confirmed) {
+          event.preventDefault();  
+        }
+        return confirmed;  
+      }
+    </script>    
+
+    <script>
+      const toggleBtn = document.getElementById('toggleSidebar');
+      const sidebar = document.querySelector('.kasir-sidebar');
+      const icon = toggleBtn.querySelector('i');
+
+      if (localStorage.getItem('sidebarMinimized') === 'true') {
+        sidebar.classList.add('minimized');
+        icon.classList.replace('fa-angle-left', 'fa-angle-right');
+      }
+
+      toggleBtn.addEventListener('click', () => {
+        sidebar.classList.toggle('minimized');
+        const isMinimized = sidebar.classList.contains('minimized');
+
+        localStorage.setItem('sidebarMinimized', isMinimized);
+
+        if (isMinimized) {
+          icon.classList.replace('fa-angle-left', 'fa-angle-right');
+        } else {
+          icon.classList.replace('fa-angle-right', 'fa-angle-left');
+        }
+      });
+    </script>

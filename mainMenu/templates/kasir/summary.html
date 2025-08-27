@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block content %}
+   <form method="get">
+    <div class="header">
+      <h3>{% now "F d, Y" %}</h3>
+    </div>
+  </form>
+  <div class="summary-header">
+    <h1>Cထffee Cafe Transaction Summary</h1>
+
+    <div class="summary-controls">
+        <!-- Filter Data Summary -->
+        <form method="get" class="filter-form">
+        <label for="filter">Filter Waktu:</label>
+        <select name="filter" id="filter">
+            <option value="today" {% if request.GET.filter == "today" %}selected{% endif %}>Hari Ini</option>
+            <option value="week" {% if request.GET.filter == "week" %}selected{% endif %}>Minggu Ini</option>
+            <option value="all" {% if request.GET.filter == "all" or not request.GET.filter %}selected{% endif %}>Semua</option>
+        </select>
+        <button type="submit" class="btn btn-primary">Terapkan</button>
+        </form>
+    </div>
+  </div>
+
+    <div id="summaryTableWrapper">
+        <table class="summary-table" border="1" cellpadding="5" cellspacing="0">
+            <thead>
+                <tr>
+                    <th>Nomor Pesanan</th>
+                    <th>Tanggal</th>
+                    <th>Nama Customer</th>
+                    <th>Total Harga</th>
+                    <th>Metode Pembayaran</th>
+                    <th>Mode Order</th>
+                    <th>Kasir</th>
+                    <th>Detail Pesanan</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for order in orders %}
+                <tr>
+                    <td>{{ order.nomor_pesanan }}</td>
+                    <td>{{ order.tanggal|date:"d M Y H:i" }}</td>
+                    <td>{{ order.nama_customer|default:"-" }}</td>
+                    <td>Rp {{ order.total_harga|floatformat:2 }}</td>
+                    <td>{{ order.metode_pembayaran }}</td>
+                    <td>{{ order.order_mode }}</td>
+                    <td>{{ order.kasir }}</td>
+                    <td>
+                        <ul>
+                        {% for detail in order.detail_orders.all %}
+                            <li>{{ detail.jumlah_item }} x {{ detail.menu.nama_item }} = Rp {{ detail.subtotal|floatformat:2 }}</li>
+                        {% empty %}
+                            <li>Tidak ada detail</li>
+                        {% endfor %}
+                        </ul>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="7">Belum ada order.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+<script>
+  function resetSummary() {
+    document.getElementById("summaryTableWrapper").innerHTML = "<p>Tampilan telah direset.</p>";
+  }
+</script>
+
+
+{% endblock %}

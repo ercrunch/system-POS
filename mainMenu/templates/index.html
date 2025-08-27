@@ -1,0 +1,25 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Welcome - Cထffee Cafe</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+  <div class="container">
+    <div class="left">
+      <h1>Welcome to Cထffee Cafe</h1>
+      <p>Taste the Difference, Feel the Warmth.</p>
+      <a href="{% url 'login' %}">
+        <button>Legooo</button>
+      </a>
+    </div>
+    <div class="right">
+      <img src="{% static 'assets/img-1.png' %}" alt="Gambar Cafe" class="gambar-kopi" />
+    </div>
+  </div>
+</body>
+</html>

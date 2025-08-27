@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Print Orders</title>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/print.css' %}">
+    <script>
+        function doPrint() {
+            window.print();
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+    </script>
+</head>
+<body>
+    <h2>Daftar Pesanan</h2>
+
+    <button class="btn" onclick="doPrint()">Print</button>
+    <button class="btn" onclick="goBack()">Back</button>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Nomor Pesanan</th>
+                <th>Tanggal</th>
+                <th>Nama Customer</th>
+                <th>Metode Pembayaran</th>
+                <th>Order Mode</th>
+                <th>Total Harga</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{ item.nomor_pesanan }}</td>
+                <td>{{ item.tanggal }}</td>
+                <td>{{ item.nama_customer }}</td>
+                <td>{{ item.metode_pembayaran }}</td>
+                <td>{{ item.get_order_mode_display }}</td>
+                <td>{{ item.total_harga }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

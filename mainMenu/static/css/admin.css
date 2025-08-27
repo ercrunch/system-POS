@@ -1,0 +1,42 @@
+.content-wrapper, .main-footer, .main-header {
+    background-color: #f5eee6 !important;
+}
+
+.main-sidebar {
+    background-color: #4e342e !important;  
+}
+
+.sidebar a {
+    color: #ffffff !important;
+}
+
+.brand-link .brand-image {
+    filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.5));
+}
+
+.login-logo img {
+  width: 200px !important;
+  height: auto;
+  transition: filter 0.3s ease, transform 0.3s ease;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+  cursor: pointer;
+}
+
+.login-logo img:hover {
+  filter: drop-shadow(0 8px 15px rgba(0, 0, 0, 0.5));
+  transform: scale(1.05);
+}
+
+.jazzmin-login-page {
+  background-color: #f5eee6 !important; 
+}
+
+.login-box .btn-primary {
+  background-color: #6c4c41; 
+  border-color: #f5eee6;
+}
+
+.login-box .btn-primary:hover {
+  background-color: #8b5e4f; 
+  border-color: #f5eee6;
+}

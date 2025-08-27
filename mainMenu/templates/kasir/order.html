@@ -1,0 +1,410 @@
+{% extends 'base.html' %}
+
+{% block title %}Menu{% endblock %}
+
+{% block content %}
+   <form method="get">
+    <div class="header">
+      <h3>{% now "F d, Y" %}</h3>
+      <input type="text" name="search" placeholder="Search Here" value="{{ request.GET.search }}">
+    </div>
+  </form>
+  <h1>Cထffee Cafe Menu</h1>
+
+  <!-- Kategori Filter -->
+  <div class="category-filter">
+    <a href="?kategori=All"><button {% if kategori == None or kategori == 'All' %}class="active"{% endif %}>All</button></a>
+    <a href="?kategori=snack"><button {% if kategori == 'snack' %}class="active"{% endif %}>Snack</button></a>
+    <a href="?kategori=cake"><button {% if kategori == 'cake' %}class="active"{% endif %}>Cake</button></a>
+    <a href="?kategori=pastry"><button {% if kategori == 'pastry' %}class="active"{% endif %}>Pastry</button></a>
+    <a href="?kategori=coffee"><button {% if kategori == 'coffee' %}class="active"{% endif %}>Coffee</button></a>
+    <a href="?kategori=non_coffee"><button {% if kategori == 'non_coffee' %}class="active"{% endif %}>Non Coffee</button></a>
+  </div>
+
+  <div class="product-grid">
+    {% for menu in menus %}
+      <div class="product-card" data-menu-id="{{ menu.id_menu }}">
+        <img src="{{ menu.gambar.url }}" alt="{{ menu.nama_item }}">
+        <h3>{{ menu.nama_item }}</h3>
+        <p>Rp{{ menu.harga }}</p>
+        <button>Add</button>
+      </div>
+    {% empty %}
+      <p>Tidak ada menu tersedia.</p>
+    {% endfor %}
+  </div>
+
+  <!-- Order Summary Sidebar -->
+    <div class="container">
+      <aside class="order-summary minimized">
+        <button id="toggleOrderSummary" class="toggle-order-summary-btn">
+          <i class="fas fa-angle-left"></i>
+        </button>
+        <div class="order-content">
+          <h2>Orders</h2>
+
+          <!-- Order Mode -->
+          <div class="order-mode" id="orderModeGroup">
+            <button class="order-mode-btn active" data-mode="Dine In">Dine</button>
+            <button class="order-mode-btn" data-mode="Take Away">Take Away</button>
+          </div>
+
+          <!-- Order List -->
+          <div class="order-list" id="orderList">
+            <!-- Dynamic Order Items -->
+          </div>
+
+          <!-- Total -->
+          <div class="totals" id="orderTotal">
+            <!-- Total Price Info -->
+          </div>
+
+          <!-- Payment Method -->
+          <div class="payments" id="paymentMethodGroup">
+            <button class="payment-btn active" data-method="Cash">Cash</button>
+            <button class="payment-btn" data-method="Debit">Debit</button>
+            <button class="payment-btn" data-method="Qris">Qris</button>
+          </div>
+
+          <!-- Customer Name -->
+          <input type="text" id="nama_customer" placeholder="Nama Customer" class="customer-input" />
+
+          <!-- Checkout -->
+          <button type="button" class="checkout-btn" id="checkoutBtn">Checkout</button>
+        </div>
+      </aside>
+
+      <!-- Modal Print Struk -->
+      <div id="receiptModal" class="receipt-modal hidden">
+        <div class="receipt-content" id="receiptContent">
+          <h2 class="store-name">Cထffee Cafe</h2>
+          <p class="receipt-meta">
+            <span id="receiptDateTime"></span><br />
+            Served by: <span id="kasirName">{{ user.username }}</span>
+          </p>
+          
+          <div id="receiptDetails">
+            <!-- isi dr JavaScript -->
+          </div>
+
+          <div class="receipt-total" id="receiptTotalInfo">
+            <!-- Total dan metode pembayaran -->
+          </div>
+
+          <p style="text-align:center;">Thankyou for ur warmth !</p>
+
+          <div class="receipt-buttons">
+            <button onclick="window.print()">Print</button>
+            <button onclick="closeReceipt()">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+<script>
+  let orderItems = [];
+  let selectedPayment = '';
+  let selectedMode = '';
+
+  // Sidebar toggle
+  const toggleOrderBtn = document.getElementById('toggleOrderSummary');
+  const orderSidebar = document.querySelector('.order-summary');
+  const orderIcon = toggleOrderBtn.querySelector('i');
+  const mainContent = document.querySelector('.main-content');
+
+  function applySidebarState(isMinimized) {
+    if (isMinimized) {
+      orderSidebar.classList.add('minimized');
+      orderIcon.classList.replace('fa-angle-left', 'fa-angle-right');
+      if(mainContent) mainContent.style.marginRight = '60px';
+    } else {
+      orderSidebar.classList.remove('minimized');
+      orderIcon.classList.replace('fa-angle-right', 'fa-angle-left');
+      if(mainContent) mainContent.style.marginRight = '300px';
+    }
+  }
+
+  const savedState = localStorage.getItem('orderSidebarMinimized') === 'true';
+  applySidebarState(savedState);
+
+  toggleOrderBtn.addEventListener('click', () => {
+    const isMinimized = orderSidebar.classList.contains('minimized');
+    applySidebarState(!isMinimized);
+    localStorage.setItem('orderSidebarMinimized', !isMinimized);
+  });
+
+  // Save/load orderItems
+  function saveOrderItemsToStorage() {
+    localStorage.setItem('orderItems', JSON.stringify(orderItems));
+  }
+
+  function loadOrderItemsFromStorage() {
+    const data = localStorage.getItem('orderItems');
+    if (data) {
+      orderItems = JSON.parse(data);
+    }
+  }
+
+  // Update order sidebar UI
+  function updateOrderSidebar() {
+    const orderListDiv = document.querySelector('.order-list');
+    orderListDiv.innerHTML = '';
+    let total = 0;
+
+    orderItems.forEach((item, index) => {
+      const subtotal = item.harga * item.jumlah_item;
+      total += subtotal;
+
+      orderListDiv.innerHTML += `
+        <div class="order-item" data-index="${index}">
+          <button class="btn-minus">➖</button>
+          <span class="item-qty">${item.jumlah_item}</span>
+          <button class="btn-plus">➕</button>
+          <span class="item-name">${item.nama_item}</span>
+          <span class="item-price">Rp${subtotal.toLocaleString()}</span>
+          <button class="btn-delete">❌</button>
+        </div>
+      `;
+
+    });
+
+    document.querySelector('.totals').innerText = `Total: Rp${total}`;
+
+    // Add event listeners for plus, minus, delete buttons
+    document.querySelectorAll('.btn-plus').forEach(btn => {
+      btn.addEventListener('click', e => {
+        const index = e.target.closest('.order-item').dataset.index;
+        orderItems[index].jumlah_item++;
+        updateOrderSidebar();
+      });
+    });
+
+    document.querySelectorAll('.btn-minus').forEach(btn => {
+      btn.addEventListener('click', e => {
+        const index = e.target.closest('.order-item').dataset.index;
+        orderItems[index].jumlah_item--;
+        if (orderItems[index].jumlah_item <= 0) {
+          orderItems.splice(index, 1);
+        }
+        updateOrderSidebar();
+      });
+    });
+
+    document.querySelectorAll('.btn-delete').forEach(btn => {
+      btn.addEventListener('click', e => {
+        const index = e.target.closest('.order-item').dataset.index;
+        orderItems.splice(index, 1);
+        updateOrderSidebar();
+      });
+    });
+
+    saveOrderItemsToStorage();
+  }
+
+  loadOrderItemsFromStorage();
+  updateOrderSidebar();
+
+  // Add Menu button clicks
+  document.querySelectorAll('.product-card button').forEach(button => {
+    button.addEventListener('click', function () {
+      const menuId = this.closest('.product-card').dataset.menuId;
+      const menuName = this.closest('.product-card').querySelector('h3').innerText;
+      const hargaText = this.closest('.product-card').querySelector('p').innerText;
+      const harga = parseInt(hargaText.replace('Rp', ''));
+
+      const existing = orderItems.find(item => item.id_menu == menuId);
+      if (existing) {
+        existing.jumlah_item += 1;
+      } else {
+        orderItems.push({ id_menu: menuId, nama_item: menuName, harga: harga, jumlah_item: 1 });
+      }
+
+      updateOrderSidebar();
+    });
+  });
+
+  // CSRF Token helper
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+
+  // Save and restore Order Mode, Payment Method, and Customer Name
+  window.addEventListener('DOMContentLoaded', () => {
+    // Restore Order Mode
+    const savedOrderMode = localStorage.getItem('orderMode');
+    if (savedOrderMode) {
+      selectedMode = savedOrderMode;
+      document.querySelectorAll('.order-mode-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.mode === savedOrderMode);
+      });
+    }
+
+    // Restore Payment Method
+    const savedPaymentMethod = localStorage.getItem('paymentMethod');
+    if (savedPaymentMethod) {
+      selectedPayment = savedPaymentMethod;
+      document.querySelectorAll('.payment-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.method === savedPaymentMethod);
+      });
+    }
+
+    // Restore Customer Name
+    const savedCustomerName = localStorage.getItem('customerName');
+    if (savedCustomerName) {
+      document.getElementById('nama_customer').value = savedCustomerName;
+    }
+  });
+
+  // Order Mode selection
+  document.querySelectorAll('.order-mode-btn').forEach(button => {
+    button.addEventListener('click', () => {
+      document.querySelectorAll('.order-mode-btn').forEach(btn => btn.classList.remove('active'));
+      button.classList.add('active');
+      selectedMode = button.dataset.mode;
+      localStorage.setItem('orderMode', selectedMode);
+    });
+  });
+
+  // Payment Method selection
+  document.querySelectorAll('.payment-btn').forEach(button => {
+    button.addEventListener('click', () => {
+      document.querySelectorAll('.payment-btn').forEach(btn => btn.classList.remove('active'));
+      button.classList.add('active');
+      selectedPayment = button.dataset.method;
+      localStorage.setItem('paymentMethod', selectedPayment);
+    });
+  });
+
+  // Save Customer Name on input
+  document.getElementById('nama_customer').addEventListener('input', e => {
+    localStorage.setItem('customerName', e.target.value);
+  });
+
+  // Checkout function
+  async function checkout() {
+    if(orderItems.length === 0) {
+      alert("Keranjang kosong! Tambahkan menu terlebih dahulu.");
+      return;
+    }
+    const customerName = document.getElementById('nama_customer').value.trim();
+    if(customerName.length === 0) {
+      alert("Mohon isi nama customer.");
+      return;
+    }
+
+    const csrfToken = getCookie('csrftoken');
+    try {
+      const response = await fetch('/checkout/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken,
+        },
+        body: JSON.stringify({
+          orderItems: orderItems,
+          metode_pembayaran: selectedPayment,
+          order_mode: selectedMode,
+          nama_customer: customerName,
+        }),
+      });
+
+      if(response.ok) {
+        const data = await response.json(); 
+        alert(`Order berhasil disimpan.\nNomor Pesanan: ${data.nomor_pesanan}`);
+        clearOrderData();
+      } else {
+        alert("Gagal menyimpan order.");
+      }
+
+    } catch (error) {
+      alert("Error saat checkout: " + error.message);
+    }
+  }
+
+  // Clear order data and UI
+  function clearOrderData() {
+    orderItems = [];
+    updateOrderSidebar();
+    localStorage.removeItem('orderItems');
+    localStorage.removeItem('customerName');
+    localStorage.removeItem('orderMode');
+    localStorage.removeItem('paymentMethod');
+    document.getElementById('nama_customer').value = '';
+    // Reset to default selections
+    selectedMode = '';
+    selectedPayment = '';
+    document.querySelectorAll('.order-mode-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.mode === selectedMode);
+    });
+    document.querySelectorAll('.payment-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.method === selectedPayment);
+    });
+  }
+
+  // Attach checkout button event listener once
+  document.getElementById('checkoutBtn').addEventListener('click', checkout);
+
+  // Print Struk
+  document.getElementById("checkoutBtn").addEventListener("click", function() {
+    const orderItems = document.querySelectorAll("#orderList .order-item");
+    const totalHTML = document.getElementById("orderTotal").innerHTML;
+    const customer = document.getElementById("nama_customer").value;
+    const mode = document.querySelector(".order-mode-btn.active").dataset.mode;
+    const payment = document.querySelector(".payment-btn.active").dataset.method;
+    const kasir =  "{{ user.username }}"; // Ganti sesuai login user jika dinamis
+    const dateTime = new Date().toLocaleString();
+
+    document.getElementById("receiptDateTime").innerText = dateTime;
+    document.getElementById("kasirName").innerText = kasir;
+
+    let receiptHTML = "";
+    orderItems.forEach(item => {
+      const name = item.querySelector(".item-name")?.innerText || "Item";
+      const qty = item.querySelector(".item-qty")?.innerText || "1";
+      const price = item.querySelector(".item-price")?.innerText || "Rp0";
+
+      receiptHTML += `
+        <div class="receipt-item">
+          <span>${qty}x ${name}</span>
+          <span>${price}</span>
+        </div>
+      `;
+    });
+
+    document.getElementById("receiptDetails").innerHTML = receiptHTML;
+
+    document.getElementById("receiptTotalInfo").innerHTML = `
+      <div class="receipt-item"><span>Order Mode:</span><span>${mode}</span></div>
+      <div class="receipt-item"><span>Payment:</span><span>${payment}</span></div>
+      <div class="receipt-item"><span>Customer:</span><span>${customer}</span></div>
+      <div class="receipt-item"><span>Total:</span>${totalHTML}</div>
+    `;
+
+    document.getElementById("receiptModal").classList.remove("hidden");
+  });
+
+  function closeReceipt() {
+    document.getElementById("receiptModal").classList.add("hidden");
+  }
+
+  function printReceipt() {
+  document.getElementById("receiptModal").classList.remove("hidden");
+
+  setTimeout(() => {
+    window.print();
+  }, 100);
+}
+
+</script>
+{% endblock %}

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Print Stok</title>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/print.css' %}">
+    <script>
+        function doPrint() {
+            window.print();
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+    </script>
+</head>
+<body>
+    <h2>Daftar Stok Bahan Baku</h2>
+
+    <button class="btn" onclick="doPrint()">Print</button>
+    <button class="btn" onclick="goBack()">Back</button>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Bahan Baku</th>
+                <th>Jumlah Stok</th>
+                <th>Satuan</th>
+                <th>Tanggal Update</th>
+                <th>Tanggal Kadaluarsa</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{ item.bahan_baku }}</td>
+                <td>{{ item.jumlah_stok }}</td>
+                <td>{{ item.satuan }}</td>
+                <td>{{ item.tanggal_update }}</td>
+                <td>{{ item.tanggal_kadaluarsa }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

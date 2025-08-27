@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Print Suppliers</title>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/print.css' %}">
+    <script>
+        function doPrint() {
+            window.print();
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+    </script>
+</head>
+<body>
+    <h2>Daftar Supplier</h2>
+
+    <button class="btn" onclick="doPrint()">Print</button>
+    <button class="btn" onclick="goBack()">Back</button>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Nama Supplier</th>
+                <th>Kontak</th>
+                <th>Email</th>
+                <th>Alamat</th>
+                <th>Jenis Barang</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{ item.nama_supplier }}</td>
+                <td>{{ item.kontak }}</td>
+                <td>{{ item.email }}</td>
+                <td>{{ item.alamat }}</td>
+                <td>{{ item.jenis_barang }}</td>
+                <td>{{ item.status }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
